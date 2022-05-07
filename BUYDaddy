@@ -385,7 +385,7 @@ Dragonhub:UpdateAxeInfo()
         AxeRangeLabel:UpdateText('Range: Not Currently Available');
         AxeCooldownLabel:UpdateText('Cooldown: Not Currently Available');
     end;
-    Connections[#Connections+1]={Name='UpdateAxeEquip',Function=Stepped:Connect(function(Tool)
+Connections[#Connections+1]={Name='UpdateAxeEquip',Function=Stepped:Connect(function(Tool)
     p_call(function()
         Dragonhub:UpdateAxeInfo();
     end);
