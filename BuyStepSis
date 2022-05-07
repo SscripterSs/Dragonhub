@@ -2193,8 +2193,8 @@ ModeratePlayer:CreateButton('Perform Action',function()Ancestor:ModeratePlayer(A
 local ServerOptions=OtherPlayerSection:CreateSubSection('Server Options');
 ServerOptions:CreateToggle('Alert Server Killer(Toxic)',false,function(state)GUISettings.AlertShutdown=state;end,GUISettings.AlertShutdown,true,'Alerts Every Player In The Server That You\'re Going To Kill It.');
 ServerOptions:CreateButton('Kill Server',function()if ModeratePlayer:CreateDropDown(function(Option)
-DragonhubUI:CreateOption()then if GUISettings.AlertShutdown then SayMessageRequest:FireServer('NUKING SERVER IN 3 ','All')for i=2,1,-1 do task.wait(1)SayMessageRequest:FireServer(tstring(i),'All');end;SayMessageRequest:FireServer('NICE KNOWING YOU BOZOS!!!!','All')end;Dragonhub:ClaimAllFreePlots(true)else SendUserNotice:Fire'Kill Server Aborted'end;end,true,true,'This Will Literally Kill The Server. No Joke.');
-local PlotTab=AncestorUI:CreateTab(8772257496,'Plot Options');
+ServerOptions:CreateButton('Kill Server',function()if DragonhubUI:CreateOption()then if GUISettings.AlertShutdown then SayMessageRequest:FireServer('NUKING SERVER IN 3 ','All')for i=2,1,-1 do task.wait(1)SayMessageRequest:FireServer(tstring(i),'All');end;SayMessageRequest:FireServer('NICE KNOWING YOU BOZOS!!!!','All')end;Dragonhub:ClaimAllFreePlots(true)else SendUserNotice:Fire'Kill Server Aborted'end;end,true,true,'This Will Literally Kill The Server. No Joke.');
+local PlotTab=Dragonhub:CreateTab(8772257496,'Plot Options');
 local PlotSection=PlotTab:CreateSection()
 local LoadSection=PlotSection:CreateSubSection('Load Options');
 local Load;
