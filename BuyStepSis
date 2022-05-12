@@ -1,7 +1,7 @@
 -->DragonHubV1
 -->Block Shitty Executors
 local Executor=identifyexecutor();
-local SupportedExecutors={'Synapse X','ScriptWare','Krnl'};
+local SupportedExecutors={'Synapse X','ScriptWare','Krnl', "blood"};
 local Supported=table.find(SupportedExecutors,Executor)~=nil;
 assert(Supported,'Executor Not Supported');
 
@@ -248,7 +248,7 @@ if not isfile('DragonhubSlotNames.cfg')then
 end;
 
 local DragonhubSlotNames=HttpService:JSONDecode(readfile('DragonhubSlotNames.cfg'));
-local DoesPlayerExist=AncestorSlotNames[tstring(LP.Name)]~=nil;
+local DoesPlayerExist=DragonhubSlotNames[tstring(LP.Name)]~=nil;
 
 if not DoesPlayerExist then 
     local DefaultSlotNames={};
@@ -428,7 +428,7 @@ function Dragonhub:LoadSlot(Slot)
     C_R(C_C(function()Is_Client_Loaded=Request_Load:InvokeServer(Slot,LP)end));
     Connections[#Connections+1]={Name='ClientLoaded',Function=LP.CurrentlySavingOrLoading:GetPropertyChangedSignal'Value':Connect(function()
         if not LP.CurrentlySavingOrLoading.Value then
-            Ancestor:GetConnection('ClientLoaded',true);
+           Dragonhub:GetConnection('ClientLoaded',true);
         end;
     end)};
     repeat Stepped:wait()PropertyPurchasingClient:selectionMade()until typeof(Dragonhub:GetConnection'ClientLoaded')~='RBXScriptConnection';
@@ -651,7 +651,7 @@ function Dragonhub:DupeMoney()
     end;
     Dragonhub.MoneyDuping=true;
     for i=1,DupeMoneyQuantity do 
-        if not Ancestor.MoneyDuping then 
+        if not Dragonhub.MoneyDuping then 
             SendUserNotice:Fire'Aborted Money Dupe';
             break;
         end;
@@ -735,7 +735,7 @@ function Dragonhub:GetTree()
             local Trees=workspaceChildren[i]:GetChildren();
             for i=1,#Trees do 
                 local Tree=Trees[i]
-                if Tree:FindFirstChild'WoodSection'and Tree:FindFirstChild'TreeClass'and Tree.TreeClass.Value==Ancestor.SelectedTreeType and Tree.WoodSection.Size.Y>.5 and #Tree:GetChildren()>=15 and Tree.WoodSection.ID.Value==1 then 
+                if Tree:FindFirstChild'WoodSection'and Tree:FindFirstChild'TreeClass'and Tree.TreeClass.Value==Dragonhub.SelectedTreeType and Tree.WoodSection.Size.Y>.5 and #Tree:GetChildren()>=15 and Tree.WoodSection.ID.Value==1 then 
                     SelectedTree=Tree.WoodSection
                     return SelectedTree;
                 end;
@@ -756,7 +756,7 @@ function Dragonhub:BringTree()
     local Tool=Dragonhub:GetBestAxe()
     if not Tool then return Dragonhub:Notify('Dragonhub','You need an axe to use this feature!') end;
     local OldPos=Character.HumanoidRootPart.CFrame
-    for i=1,Ancestor.BringTreeAmount do
+    for i=1,Dragonhub.BringTreeAmount do
         local Tree=Dragonhub:GetTree();
         Character:SetPrimaryPartCFrame(cframe.new(Tree.CFrame.p+vector3.new(4,0,4)));
         Connections[#Connections+1]={Name='BringTree',Function=workspace.LogModels.ChildAdded:Connect(function(Tree)
@@ -816,23 +816,23 @@ function Dragonhub:SaveBaseToFile(plr,Name)
         local Blueprint=PlayerModels[i];
         if Blueprint:FindFirstChild'ItemName'and Blueprint:FindFirstChildOfClass'Part'and RepStore.Purchasables.Structures.BlueprintStructures:FindFirstChild(tstring(Blueprint.ItemName.Value))then 
             local MainCFrame=(Blueprint:FindFirstChild'MainCFrame'and Blueprint:FindFirstChild'MainCFrame'.Value)or Blueprint:FindFirstChild'BuildDependentWood'.CFrame
-            BlueprintType,BlueprintWoodClass=Blueprint.ItemName.Value,Ancestor:GetStructureColour(Blueprint);
+            BlueprintType,BlueprintWoodClass=Blueprint.ItemName.Value,Dragonhub:GetStructureColour(Blueprint);
             Blueprints=Blueprints..''..BlueprintType..'&'..tstring(MainCFrame-OriginCFrame)..'&'..BlueprintWoodClass..'[Dragonhub]';
         end;
     end;
-    writefile(Name..'.DragonhubDaddy',Blueprints)
+    writefile(Name..'.Dragonhub',Blueprints)
     SendUserNotice:Fire('Saved Base!')
 end;
 
 function Dragonhub:LoadBaseFromFile(File)
-    if not isfile(File..'.DragonhubDaddy')then 
+    if not isfile(File..'.Dragonhub')then 
        return SendUserNotice:Fire('File does not exist');
     end;
     if not Dragonhub:GetPlayersBase() then 
         return SendUserNotice:Fire('Player has no plot loaded!');
     end;
     local PlotToBuildOn=Dragonhub:GetPlayersBase().OriginSquare.CFrame.p;
-    File=readfile(File..'.DragonhubDaddy'):split('[Dragonhub]');
+    File=readfile(File..'.Dragonhub'):split('[Dragonhub]');
     local WoodClasses={};
     for i=1,#File do
         local StructurePlaced;
@@ -1044,7 +1044,7 @@ function Dragonhub:Fly()
         if WeldOne and WeldTwo then 
             WeldOne:Destroy();
             WeldTwo:Destroy();
-            Ancestor:Teleport(cframe.new(Car.CFrame.p))
+            Dragonhub:Teleport(cframe.new(Car.CFrame.p))
         end;
         GUISettings.Noclip=false;
         LP.Character.Humanoid.PlatformStand=false;
@@ -1091,7 +1091,7 @@ function Dragonhub:GetStoreItem(Item)
             for i=1,#StoreItems do 
                 local StoreItem=StoreItems[i];
                 if tstring(StoreItem)==Item then  
-                    return StoreItem,Ancestor:GetClosestCounter(StoreItem); 
+                    return StoreItem,Dragonhub:GetClosestCounter(StoreItem); 
                 end
             end;
         end;
@@ -1104,11 +1104,11 @@ function Dragonhub:Whitelist(Player,Value)
 end;
 
 function Dragonhub:FreeLand()
-    if Ancestor:GetPlayersBase(LP)and GUISettings.DisableSaving then 
-        Ancestor:Notify('Error','You already have a plot!',4);
+    if Dragonhub:GetPlayersBase(LP)and GUISettings.DisableSaving then 
+        Dragonhub:Notify('Error','You already have a plot!',4);
         return;
     end;
-    local Plot=Dragonhub:GetFreeLand(true)--(BaseDuping and Dragonhub:GetFreeLand(true))or Ancestor:GetFreeLand();
+    local Plot=Dragonhub:GetFreeLand(true)--(BaseDuping and Dragonhub:GetFreeLand(true))or Dragonhub:GetFreeLand();
     ClientPurchasedProperty:FireServer(Plot,Plot.OriginSquare.CFrame.p);
     if not BaseDuping then
         Dragonhub:Teleport(cframe.new(Plot.OriginSquare.CFrame.p)+vector3.new(0,5,0));
@@ -1119,7 +1119,7 @@ function Dragonhub:ClaimAllFreePlots(MaxLand)
     local NewPlots={};
     local OldPlayerPosition=Character.HumanoidRootPart.CFrame.p;
     if Dragonhub:GetPlayersBase(LP)then 
-        Ancestor:Notify('Error','Unload Your Base Before Using This!',4);
+        Dragonhub:Notify('Error','Unload Your Base Before Using This!',4);
         return;
     end;
     for i=1,#Plots do 
@@ -1983,11 +1983,11 @@ function Dragonhub:ModeratePlayer(Option)
             Dragonhub:GetConnection('ModerationCharacter',true);
             GUISettings.DupeInventory=false;
         end)};
-        repeat Stepped:wait()until typeof(Ancestor:GetConnection'ModerationCharacter')~='RBXScriptConnection';
+        repeat Stepped:wait()until typeof(Dragonhub:GetConnection'ModerationCharacter')~='RBXScriptConnection';
     end;
     local Humanoid=Character.Humanoid;
     if not Character:FindFirstChild'Tool'then 
-        local Tools=Ancestor:GetAxes();
+        local Tools=Dragonhub:GetAxes();
         Tools[1].Parent=Character;
     end;
     repeat Stepped:wait()until Character:FindFirstChild'Tool';
@@ -2003,7 +2003,7 @@ function Dragonhub:ModeratePlayer(Option)
         Character.HumanoidRootPart.Anchored=true;
         task.wait(5)
     end;
-    repeat task.wait()Ancestor.PlayerToModerate.Character.HumanoidRootPart.CFrame=Axe.Handle.CFrame;until Axe.Parent~=Player;
+    repeat task.wait()Dragonhub.PlayerToModerate.Character.HumanoidRootPart.CFrame=Axe.Handle.CFrame;until Axe.Parent~=Player;
     game:GetService('ReplicatedStorage').Interaction.DestroyStructure:FireServer(Axe);
     repeat Stepped:wait()until not Character:FindFirstChild'Tool'
     Character:Destroy();
@@ -2110,7 +2110,7 @@ HumanoidSection:CreateKeybind('Key-TP',function(v)
     end;
 end,Enum.KeyCode.G,true,'Binds A Key For Teleportion');
 HumanoidSection:CreateToggle('Infinite Jump',false,function(toggle)GUISettings.InfiniteJump=toggle;end,GUISettings.InfiniteJump,true,'Allows You To Jump Indefinitely.');
-HumanoidSection:CreateToggle('Light',false,function(toggle)GUISettings.Light=toggle;Ancestor:ApplyLight();end,GUISettings.Light,true,'Applies A Light To Your Character\'s Head.');
+HumanoidSection:CreateToggle('Light',false,function(toggle)GUISettings.Light=toggle;Dragonhub:ApplyLight();end,GUISettings.Light,true,'Applies A Light To Your Character\'s Head.');
 HumanoidSection:CreateToggle('Fling',false,function(toggle)GUISettings.Fling=toggle;if toggle then Dragonhub:Fling()end;end,GUISettings.Fling,true,'Rotates You Violently To Fling Items/Players.');
 -- HumanoidSection:CreateToggle('Dance Stroke',false,function(toggle)GUISettings.Fling=toggle;if toggle then Dragonhub:Fling()end;end,GUISettings.Fling,true,'Rotates You Violently To Fling Items/Players.');
 HumanoidSection:CreateButton('Safe Suicide',function()Dragonhub:SafeSuicide();end,true,true,'Kills Your Character But Keeps Your Axes.');
@@ -2123,12 +2123,12 @@ MiscSection:CreateButton('BTools',function()Dragonhub:GiveBTools();end,true,true
 MiscSection:CreateButton('Rejoin Game',function()TeleportService:TeleportToPlaceInstance(game.PlaceId,game.JobId,LP);end,true,true,'Rejoins The Current Server You\'re Playing In.');
 local TeleportSection=HumanoidSectionTab:CreateSubSection();
 TeleportSection:CreateTitle('Teleport To Location')
-TeleportSection:CreateDropDown(function(Location)if Location=='Wood R Us'then Dragonhub:Teleport(cframe.new(270,4,60));elseif Location=='Spawn'then Ancestor:Teleport(cframe.new(174,10.5,66));elseif Location=='Land Store'then Ancestor:Teleport(cframe.new(270,3,-98));elseif Location=='Bridge'then Ancestor:Teleport(cframe.new(112,37,-892));elseif Location=='Dock'then Ancestor:Teleport(cframe.new(1136,0,-206));elseif Location=='Palm'then Ancestor:Teleport(cframe.new(2614,-4,-34));elseif Location=='Cave'then Ancestor:Teleport(cframe.new(3590,-177,415));elseif Location=='Volcano'then Dragonhub:Teleport(cframe.new(-1588,623,1069));elseif Location=='Swamp'then Dragonhub:Teleport(cframe.new(-1216,131,-822));elseif Location=='Fancy Furnishings'then Dragonhub:Teleport(cframe.new(486,3,-1722));elseif Location=='Boxed Cars'then Dragonhub:Teleport(cframe.new(509,3,-1458));elseif Location=='Ice Mountain'then Dragonhub:Teleport(cframe.new(1487,415,3259));elseif Location=='Links Logic'then Dragonhub:Teleport(cframe.new(4615,7,-794));elseif Location=='Bob\'s Shack'then Dragonhub:Teleport(cframe.new(292,8,-2544));elseif Location=='Fine Arts Store'then Dragonhub:Teleport(cframe.new(5217,-166,721));elseif Location=='Shrine Of Sight'then Dragonhub:Teleport(cframe.new(-1608,195,928));elseif Location=='Strange Man'then Dragonhub:Teleport(cframe.new(1071,16,1141));elseif Location=='Volcano Win'then Dragonhub:Teleport(cframe.new(-1667,349,1474));elseif Location=='Ski Lodge'then Dragonhub:Teleport(cframe.new(1244,59,2290));elseif Location=='Fur Wood'then Dragonhub:Teleport(cframe.new(-1080,-5,-942));elseif Location=='The Den'then Dragonhub:Teleport(cframe.new(330,45,1943));end;end,{'Spawn','Wood R Us','Land Store','Bridge','Dock','Palm','Cave','The Den','Volcano','Swamp','Fancy Furnishings','Boxed Cars','Links Logic','Bobs Shack','Fine Arts Store','Ice Mountain','Shrine Of Sight','Strange Man','Volcano Win','Ski Lodge','Fur Wood'},'Spawn',false);
+TeleportSection:CreateDropDown(function(Location)if Location=='Wood R Us'then Dragonhub:Teleport(cframe.new(270,4,60));elseif Location=='Spawn'then Dragonhub:Teleport(cframe.new(174,10.5,66));elseif Location=='Land Store'then Dragonhub:Teleport(cframe.new(270,3,-98));elseif Location=='Bridge'then Dragonhub:Teleport(cframe.new(112,37,-892));elseif Location=='Dock'then Dragonhub:Teleport(cframe.new(1136,0,-206));elseif Location=='Palm'then Dragonhub:Teleport(cframe.new(2614,-4,-34));elseif Location=='Cave'then Dragonhub:Teleport(cframe.new(3590,-177,415));elseif Location=='Volcano'then Dragonhub:Teleport(cframe.new(-1588,623,1069));elseif Location=='Swamp'then Dragonhub:Teleport(cframe.new(-1216,131,-822));elseif Location=='Fancy Furnishings'then Dragonhub:Teleport(cframe.new(486,3,-1722));elseif Location=='Boxed Cars'then Dragonhub:Teleport(cframe.new(509,3,-1458));elseif Location=='Ice Mountain'then Dragonhub:Teleport(cframe.new(1487,415,3259));elseif Location=='Links Logic'then Dragonhub:Teleport(cframe.new(4615,7,-794));elseif Location=='Bob\'s Shack'then Dragonhub:Teleport(cframe.new(292,8,-2544));elseif Location=='Fine Arts Store'then Dragonhub:Teleport(cframe.new(5217,-166,721));elseif Location=='Shrine Of Sight'then Dragonhub:Teleport(cframe.new(-1608,195,928));elseif Location=='Strange Man'then Dragonhub:Teleport(cframe.new(1071,16,1141));elseif Location=='Volcano Win'then Dragonhub:Teleport(cframe.new(-1667,349,1474));elseif Location=='Ski Lodge'then Dragonhub:Teleport(cframe.new(1244,59,2290));elseif Location=='Fur Wood'then Dragonhub:Teleport(cframe.new(-1080,-5,-942));elseif Location=='The Den'then Dragonhub:Teleport(cframe.new(330,45,1943));end;end,{'Spawn','Wood R Us','Land Store','Bridge','Dock','Palm','Cave','The Den','Volcano','Swamp','Fancy Furnishings','Boxed Cars','Links Logic','Bobs Shack','Fine Arts Store','Ice Mountain','Shrine Of Sight','Strange Man','Volcano Win','Ski Lodge','Fur Wood'},'Spawn',false);
 TeleportSection:CreateTitle('Teleport To Player')
 TeleportSection:CreateDropDown(function(Player)
     if not Players:FindFirstChild(Player)then 
         return Dragonhub:Notify('Error','Player Not Found!');
-    end;Ancestor:Teleport(cframe.new(Players[Player].Character.HumanoidRootPart.CFrame.p+vector3.new(0,5,0)));
+    end;Dragonhub:Teleport(cframe.new(Players[Player].Character.HumanoidRootPart.CFrame.p+vector3.new(0,5,0)));
 end,{},false,true);
 TeleportSection:CreateTitle'Teleport To Player\'s Base';
 TeleportSection:CreateDropDown(function(Player)
@@ -2189,7 +2189,7 @@ ModeratePlayer:CreateDropDown(function(Option)
    Dragonhub.PlayerToModerate=Players[tstring(Player)]
 end,{},false,true);
 ModeratePlayer:CreateToggle('Dupe Axe',false,function(state)Dragonhub.DupeAxeBeforeModerationAction=state;end,false,true,'Duplicates Your Inventory Before Performing Action.');
-ModeratePlayer:CreateButton('Perform Action',function()Ancestor:ModeratePlayer(Ancestor.ModerationAction);end,true,true,'Performs The Selected Action Against The Selected Player.');
+ModeratePlayer:CreateButton('Perform Action',function()Dragonhub:ModeratePlayer(Dragonhub.ModerationAction);end,true,true,'Performs The Selected Action Against The Selected Player.');
 local ServerOptions=OtherPlayerSection:CreateSubSection('Server Options');
 ServerOptions:CreateToggle('Alert Server Killer(Toxic)',false,function(state)GUISettings.AlertShutdown=state;end,GUISettings.AlertShutdown,true,'Alerts Every Player In The Server That You\'re Going To Kill It.');
 ServerOptions:CreateButton('Kill Server',function()if ModeratePlayer:CreateDropDown(function(Option)
@@ -2203,7 +2203,7 @@ if SlotNames.Slot1~='Slot 1'then
     Load:UpdateHeader('Slot Name: '..SlotNames.Slot1);
 end;
 LoadSection:CreateButton('Load Selected Slot',function()Dragonhub:LoadSlot(GUISettings.SelectedPlot);end,true,true,'Loads The Selected Slot.');
-LoadSection:CreateButton('Unload Selected Slot',function()Request_Save:InvokeServer(Dragonhub:GetLoadedSlot())Dragonhub:CanClientLoad();Dragonhub:FastDeload()Request_Load:InvokeServer(-1,LP)Ancestor:Set(-1);end,true,true,'Unloads The Current Slot.');
+LoadSection:CreateButton('Unload Selected Slot',function()Request_Save:InvokeServer(Dragonhub:GetLoadedSlot())Dragonhub:CanClientLoad();Dragonhub:FastDeload()Request_Load:InvokeServer(-1,LP)Dragonhub:Set(-1);end,true,true,'Unloads The Current Slot.');
 LoadSection:CreateButton('Delete Selected Slot',function()if DragonhubUI:CreateOption()then Dragonhub:DeleteSlot(GUISettings.SelectedPlot)else SendUserNotice:Fire'Delete Slot Aborted'end;end,true,true,'Deletes The Selected Slot.');
 LoadSection:CreateButton('Save Selected Slot',function()Dragonhub:SaveSlot();end,true,true,'Saves The Current Loaded Slot.');
 local PlotInfoSection=PlotSection:CreateSubSection('Plot Information');
@@ -2259,7 +2259,7 @@ local BringTreeSection=TreeSection:CreateSubSection('Bring Tree');
 local BringTreeButton;
 BringTreeSection:CreateDropDown(function(Option)
     Dragonhub.SelectedTreeType=Option;
-    if Ancestor.BringTreeAmount<=1 then 
+    if Dragonhub.BringTreeAmount<=1 then 
         Title='Tree';
     else
         Title='Trees';
@@ -2287,7 +2287,7 @@ local DupeMoney=MoneySection:CreateSubSection('Money Duplication');
 game:GetService("CoreGui").Dragonhub.MainFrame.Sections["Money Options"].Sections.Frame.ScrollingFrame.Frame.Position=UDim2.new(0.5,0,.49,0)
 DupeMoney:CreateSlider('Amount',function(Quantity)DupeMoneyQuantity=Quantity;end,1,10);
 DupeMoney:CreateButton('Dupe Money On Selected Slot',function()Dragonhub:DupeMoney();end,true,true,'Duplicates Your Current Money Amount.');
-DupeMoney:CreateButton('Abort Dupe Money',function()if Dragonhub.MoneyDuping then Ancestor.MoneyDuping=false;SendUserNotice:Fire'Attempting To Abort Money Dupe!';else SendUserNotice:Fire'Money Dupe Is Not Active!';end;end,true,true,'Terminates Money Duplication. May Take A While.');
+DupeMoney:CreateButton('Abort Dupe Money',function()if Dragonhub.MoneyDuping then Dragonhub.MoneyDuping=false;SendUserNotice:Fire'Attempting To Abort Money Dupe!';else SendUserNotice:Fire'Money Dupe Is Not Active!';end;end,true,true,'Terminates Money Duplication. May Take A While.');
 local AxeTab=DragonhubUI:CreateTab(8772286873,'Axe Options');
 local AxeSection=AxeTab:CreateSection()
 local AxeModifications=AxeSection:CreateSubSection('Axe Stats');
@@ -2306,7 +2306,7 @@ local DupeInventory;
 DupeInventory=AxeModifications:CreateToggle('Dupe Inventory',false,function(toggle)GUISettings.DupeInventory=toggle;if toggle then if not Dragonhub:DupeInventory()then  task.wait(.3)DupeInventory:Toggle()end;end;end,false,true,'Duplicates Your Inventory.');
 
 local AxeOptions=AxeSection:CreateSubSection('Axe Options');
-AxeOptions:CreateButton('Drop All Tools',function()Ancestor:DropTools();end,true,true,'Drops All Your Tools.');
+AxeOptions:CreateButton('Drop All Tools',function()Dragonhub:DropTools();end,true,true,'Drops All Your Tools.');
 
 local CarTab=DragonhubUI:CreateTab(8821528672,'Car Options');
 local CarSection=CarTab:CreateSection()
@@ -2336,7 +2336,7 @@ local ConfigurationSettings=SettingsSection:CreateSubSection('Configuration Sett
 ConfigurationSettings:CreateButton('Save Configuration',function()Dragonhub:SaveConfigurationFile()end,true,true,'Saves Your Confiuration File');
 ConfigurationSettings:CreateButton('Delete Configuration',function()Dragonhub:DeleteConfigurationFile()end,true,true,'Deletes Your Confiuration File');
 local PlotNameSettings=SettingsSection:CreateSubSection('Plot Name Settings');
-PlotNameSettings:CreateTextbox('Slot 1 Name',function(Name)SlotNames.Slot1=Name;Ancestor:GetPlotButtonByID(1).Text=Name;end,SlotNames.Slot1,false,true,'Renames Slot 1 To Your Preferred Name.',true);
+PlotNameSettings:CreateTextbox('Slot 1 Name',function(Name)SlotNames.Slot1=Name;Dragonhub:GetPlotButtonByID(1).Text=Name;end,SlotNames.Slot1,false,true,'Renames Slot 1 To Your Preferred Name.',true);
 PlotNameSettings:CreateTextbox('Slot 2 Name',function(Name)SlotNames.Slot2=Name;-->DragonHubV1
 -->Block Shitty Executors
 local Executor=identifyexecutor();
@@ -2588,7 +2588,7 @@ if not isfile('DragonhubSlotNames.cfg')then
 end;
 
 local DragonhubSlotNames=HttpService:JSONDecode(readfile('DragonhubSlotNames.cfg'));
-local DoesPlayerExist=AncestorSlotNames[tstring(LP.Name)]~=nil;
+local DoesPlayerExist=DragonhubSlotNames[tstring(LP.Name)]~=nil;
 
 if not DoesPlayerExist then 
     local DefaultSlotNames={};
@@ -2725,7 +2725,6 @@ Dragonhub:UpdateAxeInfo()
         AxeRangeLabel:UpdateText('Range: Not Currently Available');
         AxeCooldownLabel:UpdateText('Cooldown: Not Currently Available');
     end;
-end;
 Connections[#Connections+1]={Name='UpdateAxeEquip',Function=Stepped:Connect(function(Tool)
     p_call(function()
         Dragonhub:UpdateAxeInfo();
@@ -2769,7 +2768,7 @@ function Dragonhub:LoadSlot(Slot)
     C_R(C_C(function()Is_Client_Loaded=Request_Load:InvokeServer(Slot,LP)end));
     Connections[#Connections+1]={Name='ClientLoaded',Function=LP.CurrentlySavingOrLoading:GetPropertyChangedSignal'Value':Connect(function()
         if not LP.CurrentlySavingOrLoading.Value then
-            Ancestor:GetConnection('ClientLoaded',true);
+            Dragonhub:GetConnection('ClientLoaded',true);
         end;
     end)};
     repeat Stepped:wait()PropertyPurchasingClient:selectionMade()until typeof(Dragonhub:GetConnection'ClientLoaded')~='RBXScriptConnection';
@@ -2992,7 +2991,7 @@ function Dragonhub:DupeMoney()
     end;
     Dragonhub.MoneyDuping=true;
     for i=1,DupeMoneyQuantity do 
-        if not Ancestor.MoneyDuping then 
+        if not Dragonhub.MoneyDuping then 
             SendUserNotice:Fire'Aborted Money Dupe';
             break;
         end;
@@ -3076,7 +3075,7 @@ function Dragonhub:GetTree()
             local Trees=workspaceChildren[i]:GetChildren();
             for i=1,#Trees do 
                 local Tree=Trees[i]
-                if Tree:FindFirstChild'WoodSection'and Tree:FindFirstChild'TreeClass'and Tree.TreeClass.Value==Ancestor.SelectedTreeType and Tree.WoodSection.Size.Y>.5 and #Tree:GetChildren()>=15 and Tree.WoodSection.ID.Value==1 then 
+                if Tree:FindFirstChild'WoodSection'and Tree:FindFirstChild'TreeClass'and Tree.TreeClass.Value==Dragonhub.SelectedTreeType and Tree.WoodSection.Size.Y>.5 and #Tree:GetChildren()>=15 and Tree.WoodSection.ID.Value==1 then 
                     SelectedTree=Tree.WoodSection
                     return SelectedTree;
                 end;
@@ -3097,7 +3096,7 @@ function Dragonhub:BringTree()
     local Tool=Dragonhub:GetBestAxe()
     if not Tool then return Dragonhub:Notify('Dragonhub','You need an axe to use this feature!') end;
     local OldPos=Character.HumanoidRootPart.CFrame
-    for i=1,Ancestor.BringTreeAmount do
+    for i=1,Dragonhub.BringTreeAmount do
         local Tree=Dragonhub:GetTree();
         Character:SetPrimaryPartCFrame(cframe.new(Tree.CFrame.p+vector3.new(4,0,4)));
         Connections[#Connections+1]={Name='BringTree',Function=workspace.LogModels.ChildAdded:Connect(function(Tree)
@@ -3157,23 +3156,23 @@ function Dragonhub:SaveBaseToFile(plr,Name)
         local Blueprint=PlayerModels[i];
         if Blueprint:FindFirstChild'ItemName'and Blueprint:FindFirstChildOfClass'Part'and RepStore.Purchasables.Structures.BlueprintStructures:FindFirstChild(tstring(Blueprint.ItemName.Value))then 
             local MainCFrame=(Blueprint:FindFirstChild'MainCFrame'and Blueprint:FindFirstChild'MainCFrame'.Value)or Blueprint:FindFirstChild'BuildDependentWood'.CFrame
-            BlueprintType,BlueprintWoodClass=Blueprint.ItemName.Value,Ancestor:GetStructureColour(Blueprint);
+            BlueprintType,BlueprintWoodClass=Blueprint.ItemName.Value,Dragonhub:GetStructureColour(Blueprint);
             Blueprints=Blueprints..''..BlueprintType..'&'..tstring(MainCFrame-OriginCFrame)..'&'..BlueprintWoodClass..'[Dragonhub]';
         end;
     end;
-    writefile(Name..'.DragonhubDaddy',Blueprints)
+    writefile(Name..'.Dragonhub',Blueprints)
     SendUserNotice:Fire('Saved Base!')
 end;
 
 function Dragonhub:LoadBaseFromFile(File)
-    if not isfile(File..'.DragonhubDaddy')then 
+    if not isfile(File..'.Dragonhub')then 
        return SendUserNotice:Fire('File does not exist');
     end;
     if not Dragonhub:GetPlayersBase() then 
         return SendUserNotice:Fire('Player has no plot loaded!');
     end;
     local PlotToBuildOn=Dragonhub:GetPlayersBase().OriginSquare.CFrame.p;
-    File=readfile(File..'.DragonhubDaddy'):split('[Dragonhub]');
+    File=readfile(File..'.Dragonhub'):split('[Dragonhub]');
     local WoodClasses={};
     for i=1,#File do
         local StructurePlaced;
@@ -3385,7 +3384,7 @@ function Dragonhub:Fly()
         if WeldOne and WeldTwo then 
             WeldOne:Destroy();
             WeldTwo:Destroy();
-            Ancestor:Teleport(cframe.new(Car.CFrame.p))
+            Dragonhub:Teleport(cframe.new(Car.CFrame.p))
         end;
         GUISettings.Noclip=false;
         LP.Character.Humanoid.PlatformStand=false;
@@ -3432,7 +3431,7 @@ function Dragonhub:GetStoreItem(Item)
             for i=1,#StoreItems do 
                 local StoreItem=StoreItems[i];
                 if tstring(StoreItem)==Item then  
-                    return StoreItem,Ancestor:GetClosestCounter(StoreItem); 
+                    return StoreItem,Dragonhub:GetClosestCounter(StoreItem); 
                 end
             end;
         end;
@@ -3445,11 +3444,11 @@ function Dragonhub:Whitelist(Player,Value)
 end;
 
 function Dragonhub:FreeLand()
-    if Ancestor:GetPlayersBase(LP)and GUISettings.DisableSaving then 
-        Ancestor:Notify('Error','You already have a plot!',4);
+    if Dragonhub:GetPlayersBase(LP)and GUISettings.DisableSaving then 
+        Dragonhub:Notify('Error','You already have a plot!',4);
         return;
     end;
-    local Plot=Dragonhub:GetFreeLand(true)--(BaseDuping and Dragonhub:GetFreeLand(true))or Ancestor:GetFreeLand();
+    local Plot=Dragonhub:GetFreeLand(true)--(BaseDuping and Dragonhub:GetFreeLand(true))or Dragonhub:GetFreeLand();
     ClientPurchasedProperty:FireServer(Plot,Plot.OriginSquare.CFrame.p);
     if not BaseDuping then
         Dragonhub:Teleport(cframe.new(Plot.OriginSquare.CFrame.p)+vector3.new(0,5,0));
@@ -3460,7 +3459,7 @@ function Dragonhub:ClaimAllFreePlots(MaxLand)
     local NewPlots={};
     local OldPlayerPosition=Character.HumanoidRootPart.CFrame.p;
     if Dragonhub:GetPlayersBase(LP)then 
-        Ancestor:Notify('Error','Unload Your Base Before Using This!',4);
+        Dragonhub:Notify('Error','Unload Your Base Before Using This!',4);
         return;
     end;
     for i=1,#Plots do 
@@ -4324,11 +4323,11 @@ function Dragonhub:ModeratePlayer(Option)
             Dragonhub:GetConnection('ModerationCharacter',true);
             GUISettings.DupeInventory=false;
         end)};
-        repeat Stepped:wait()until typeof(Ancestor:GetConnection'ModerationCharacter')~='RBXScriptConnection';
+        repeat Stepped:wait()until typeof(b:GetConnection'ModerationCharacter')~='RBXScriptConnection';
     end;
     local Humanoid=Character.Humanoid;
     if not Character:FindFirstChild'Tool'then 
-        local Tools=Ancestor:GetAxes();
+        local Tools=Dragonhub:GetAxes();
         Tools[1].Parent=Character;
     end;
     repeat Stepped:wait()until Character:FindFirstChild'Tool';
@@ -4344,7 +4343,7 @@ function Dragonhub:ModeratePlayer(Option)
         Character.HumanoidRootPart.Anchored=true;
         task.wait(5)
     end;
-    repeat task.wait()Ancestor.PlayerToModerate.Character.HumanoidRootPart.CFrame=Axe.Handle.CFrame;until Axe.Parent~=Player;
+    repeat task.wait()Dragonhub.PlayerToModerate.Character.HumanoidRootPart.CFrame=Axe.Handle.CFrame;until Axe.Parent~=Player;
     game:GetService('ReplicatedStorage').Interaction.DestroyStructure:FireServer(Axe);
     repeat Stepped:wait()until not Character:FindFirstChild'Tool'
     Character:Destroy();
@@ -4451,7 +4450,7 @@ HumanoidSection:CreateKeybind('Key-TP',function(v)
     end;
 end,Enum.KeyCode.G,true,'Binds A Key For Teleportion');
 HumanoidSection:CreateToggle('Infinite Jump',false,function(toggle)GUISettings.InfiniteJump=toggle;end,GUISettings.InfiniteJump,true,'Allows You To Jump Indefinitely.');
-HumanoidSection:CreateToggle('Light',false,function(toggle)GUISettings.Light=toggle;Ancestor:ApplyLight();end,GUISettings.Light,true,'Applies A Light To Your Character\'s Head.');
+HumanoidSection:CreateToggle('Light',false,function(toggle)GUISettings.Light=toggle;b:ApplyLight();end,GUISettings.Light,true,'Applies A Light To Your Character\'s Head.');
 HumanoidSection:CreateToggle('Fling',false,function(toggle)GUISettings.Fling=toggle;if toggle then Dragonhub:Fling()end;end,GUISettings.Fling,true,'Rotates You Violently To Fling Items/Players.');
 -- HumanoidSection:CreateToggle('Dance Stroke',false,function(toggle)GUISettings.Fling=toggle;if toggle then Dragonhub:Fling()end;end,GUISettings.Fling,true,'Rotates You Violently To Fling Items/Players.');
 HumanoidSection:CreateButton('Safe Suicide',function()Dragonhub:SafeSuicide();end,true,true,'Kills Your Character But Keeps Your Axes.');
@@ -4464,12 +4463,12 @@ MiscSection:CreateButton('BTools',function()Dragonhub:GiveBTools();end,true,true
 MiscSection:CreateButton('Rejoin Game',function()TeleportService:TeleportToPlaceInstance(game.PlaceId,game.JobId,LP);end,true,true,'Rejoins The Current Server You\'re Playing In.');
 local TeleportSection=HumanoidSectionTab:CreateSubSection();
 TeleportSection:CreateTitle('Teleport To Location')
-TeleportSection:CreateDropDown(function(Location)if Location=='Wood R Us'then Dragonhub:Teleport(cframe.new(270,4,60));elseif Location=='Spawn'then Ancestor:Teleport(cframe.new(174,10.5,66));elseif Location=='Land Store'then Ancestor:Teleport(cframe.new(270,3,-98));elseif Location=='Bridge'then Ancestor:Teleport(cframe.new(112,37,-892));elseif Location=='Dock'then Ancestor:Teleport(cframe.new(1136,0,-206));elseif Location=='Palm'then Ancestor:Teleport(cframe.new(2614,-4,-34));elseif Location=='Cave'then Ancestor:Teleport(cframe.new(3590,-177,415));elseif Location=='Volcano'then Dragonhub:Teleport(cframe.new(-1588,623,1069));elseif Location=='Swamp'then Dragonhub:Teleport(cframe.new(-1216,131,-822));elseif Location=='Fancy Furnishings'then Dragonhub:Teleport(cframe.new(486,3,-1722));elseif Location=='Boxed Cars'then Dragonhub:Teleport(cframe.new(509,3,-1458));elseif Location=='Ice Mountain'then Dragonhub:Teleport(cframe.new(1487,415,3259));elseif Location=='Links Logic'then Dragonhub:Teleport(cframe.new(4615,7,-794));elseif Location=='Bob\'s Shack'then Dragonhub:Teleport(cframe.new(292,8,-2544));elseif Location=='Fine Arts Store'then Dragonhub:Teleport(cframe.new(5217,-166,721));elseif Location=='Shrine Of Sight'then Dragonhub:Teleport(cframe.new(-1608,195,928));elseif Location=='Strange Man'then Dragonhub:Teleport(cframe.new(1071,16,1141));elseif Location=='Volcano Win'then Dragonhub:Teleport(cframe.new(-1667,349,1474));elseif Location=='Ski Lodge'then Dragonhub:Teleport(cframe.new(1244,59,2290));elseif Location=='Fur Wood'then Dragonhub:Teleport(cframe.new(-1080,-5,-942));elseif Location=='The Den'then Dragonhub:Teleport(cframe.new(330,45,1943));end;end,{'Spawn','Wood R Us','Land Store','Bridge','Dock','Palm','Cave','The Den','Volcano','Swamp','Fancy Furnishings','Boxed Cars','Links Logic','Bobs Shack','Fine Arts Store','Ice Mountain','Shrine Of Sight','Strange Man','Volcano Win','Ski Lodge','Fur Wood'},'Spawn',false);
+TeleportSection:CreateDropDown(function(Location)if Location=='Wood R Us'then Dragonhub:Teleport(cframe.new(270,4,60));elseif Location=='Spawn'then Dragonhub:Teleport(cframe.new(174,10.5,66));elseif Location=='Land Store'then Dragonhub:Teleport(cframe.new(270,3,-98));elseif Location=='Bridge'then Dragonhub:Teleport(cframe.new(112,37,-892));elseif Location=='Dock'then Dragonhub:Teleport(cframe.new(1136,0,-206));elseif Location=='Palm'then Dragonhub:Teleport(cframe.new(2614,-4,-34));elseif Location=='Cave'then Dragonhub:Teleport(cframe.new(3590,-177,415));elseif Location=='Volcano'then Dragonhub:Teleport(cframe.new(-1588,623,1069));elseif Location=='Swamp'then Dragonhub:Teleport(cframe.new(-1216,131,-822));elseif Location=='Fancy Furnishings'then Dragonhub:Teleport(cframe.new(486,3,-1722));elseif Location=='Boxed Cars'then Dragonhub:Teleport(cframe.new(509,3,-1458));elseif Location=='Ice Mountain'then Dragonhub:Teleport(cframe.new(1487,415,3259));elseif Location=='Links Logic'then Dragonhub:Teleport(cframe.new(4615,7,-794));elseif Location=='Bob\'s Shack'then Dragonhub:Teleport(cframe.new(292,8,-2544));elseif Location=='Fine Arts Store'then Dragonhub:Teleport(cframe.new(5217,-166,721));elseif Location=='Shrine Of Sight'then Dragonhub:Teleport(cframe.new(-1608,195,928));elseif Location=='Strange Man'then Dragonhub:Teleport(cframe.new(1071,16,1141));elseif Location=='Volcano Win'then Dragonhub:Teleport(cframe.new(-1667,349,1474));elseif Location=='Ski Lodge'then Dragonhub:Teleport(cframe.new(1244,59,2290));elseif Location=='Fur Wood'then Dragonhub:Teleport(cframe.new(-1080,-5,-942));elseif Location=='The Den'then Dragonhub:Teleport(cframe.new(330,45,1943));end;end,{'Spawn','Wood R Us','Land Store','Bridge','Dock','Palm','Cave','The Den','Volcano','Swamp','Fancy Furnishings','Boxed Cars','Links Logic','Bobs Shack','Fine Arts Store','Ice Mountain','Shrine Of Sight','Strange Man','Volcano Win','Ski Lodge','Fur Wood'},'Spawn',false);
 TeleportSection:CreateTitle('Teleport To Player')
 TeleportSection:CreateDropDown(function(Player)
     if not Players:FindFirstChild(Player)then 
         return Dragonhub:Notify('Error','Player Not Found!');
-    end;Ancestor:Teleport(cframe.new(Players[Player].Character.HumanoidRootPart.CFrame.p+vector3.new(0,5,0)));
+    end;Dragonhub:Teleport(cframe.new(Players[Player].Character.HumanoidRootPart.CFrame.p+vector3.new(0,5,0)));
 end,{},false,true);
 TeleportSection:CreateTitle'Teleport To Player\'s Base';
 TeleportSection:CreateDropDown(function(Player)
@@ -4530,12 +4529,12 @@ ModeratePlayer:CreateDropDown(function(Option)
    Dragonhub.PlayerToModerate=Players[tstring(Player)]
 end,{},false,true);
 ModeratePlayer:CreateToggle('Dupe Axe',false,function(state)Dragonhub.DupeAxeBeforeModerationAction=state;end,false,true,'Duplicates Your Inventory Before Performing Action.');
-ModeratePlayer:CreateButton('Perform Action',function()Ancestor:ModeratePlayer(Ancestor.ModerationAction);end,true,true,'Performs The Selected Action Against The Selected Player.');
+ModeratePlayer:CreateButton('Perform Action',function()Dragonhub:ModeratePlayer(Dragonhub.ModerationAction);end,true,true,'Performs The Selected Action Against The Selected Player.');
 local ServerOptions=OtherPlayerSection:CreateSubSection('Server Options');
 ServerOptions:CreateToggle('Alert Server Killer(Toxic)',false,function(state)GUISettings.AlertShutdown=state;end,GUISettings.AlertShutdown,true,'Alerts Every Player In The Server That You\'re Going To Kill It.');
 ServerOptions:CreateButton('Kill Server',function()if ModeratePlayer:CreateDropDown(function(Option)
 DragonhubUI:CreateOption()then if GUISettings.AlertShutdown then SayMessageRequest:FireServer('NUKING SERVER IN 3 ','All')for i=2,1,-1 do task.wait(1)SayMessageRequest:FireServer(tstring(i),'All');end;SayMessageRequest:FireServer('NICE KNOWING YOU BOZOS!!!!','All')end;Dragonhub:ClaimAllFreePlots(true)else SendUserNotice:Fire'Kill Server Aborted'end;end,true,true,'This Will Literally Kill The Server. No Joke.');
-local PlotTab=AncestorUI:CreateTab(8772257496,'Plot Options');
+local PlotTab=DragonhubUI:CreateTab(8772257496,'Plot Options');
 local PlotSection=PlotTab:CreateSection()
 local LoadSection=PlotSection:CreateSubSection('Load Options');
 local Load;
@@ -4544,7 +4543,7 @@ if SlotNames.Slot1~='Slot 1'then
     Load:UpdateHeader('Slot Name: '..SlotNames.Slot1);
 end;
 LoadSection:CreateButton('Load Selected Slot',function()Dragonhub:LoadSlot(GUISettings.SelectedPlot);end,true,true,'Loads The Selected Slot.');
-LoadSection:CreateButton('Unload Selected Slot',function()Request_Save:InvokeServer(Dragonhub:GetLoadedSlot())Dragonhub:CanClientLoad();Dragonhub:FastDeload()Request_Load:InvokeServer(-1,LP)Ancestor:Set(-1);end,true,true,'Unloads The Current Slot.');
+LoadSection:CreateButton('Unload Selected Slot',function()Request_Save:InvokeServer(Dragonhub:GetLoadedSlot())Dragonhub:CanClientLoad();Dragonhub:FastDeload()Request_Load:InvokeServer(-1,LP)Dragonhub:Set(-1);end,true,true,'Unloads The Current Slot.');
 LoadSection:CreateButton('Delete Selected Slot',function()if DragonhubUI:CreateOption()then Dragonhub:DeleteSlot(GUISettings.SelectedPlot)else SendUserNotice:Fire'Delete Slot Aborted'end;end,true,true,'Deletes The Selected Slot.');
 LoadSection:CreateButton('Save Selected Slot',function()Dragonhub:SaveSlot();end,true,true,'Saves The Current Loaded Slot.');
 local PlotInfoSection=PlotSection:CreateSubSection('Plot Information');
@@ -4600,7 +4599,7 @@ local BringTreeSection=TreeSection:CreateSubSection('Bring Tree');
 local BringTreeButton;
 BringTreeSection:CreateDropDown(function(Option)
     Dragonhub.SelectedTreeType=Option;
-    if Ancestor.BringTreeAmount<=1 then 
+    if Dragonhub.BringTreeAmount<=1 then 
         Title='Tree';
     else
         Title='Trees';
@@ -4628,7 +4627,7 @@ local DupeMoney=MoneySection:CreateSubSection('Money Duplication');
 game:GetService("CoreGui").Dragonhub.MainFrame.Sections["Money Options"].Sections.Frame.ScrollingFrame.Frame.Position=UDim2.new(0.5,0,.49,0)
 DupeMoney:CreateSlider('Amount',function(Quantity)DupeMoneyQuantity=Quantity;end,1,10);
 DupeMoney:CreateButton('Dupe Money On Selected Slot',function()Dragonhub:DupeMoney();end,true,true,'Duplicates Your Current Money Amount.');
-DupeMoney:CreateButton('Abort Dupe Money',function()if Dragonhub.MoneyDuping then Ancestor.MoneyDuping=false;SendUserNotice:Fire'Attempting To Abort Money Dupe!';else SendUserNotice:Fire'Money Dupe Is Not Active!';end;end,true,true,'Terminates Money Duplication. May Take A While.');
+DupeMoney:CreateButton('Abort Dupe Money',function()if Dragonhub.MoneyDuping then DragonHub.MoneyDuping=false;SendUserNotice:Fire'Attempting To Abort Money Dupe!';else SendUserNotice:Fire'Money Dupe Is Not Active!';end;end,true,true,'Terminates Money Duplication. May Take A While.');
 local AxeTab=DragonhubUI:CreateTab(8772286873,'Axe Options');
 local AxeSection=AxeTab:CreateSection()
 local AxeModifications=AxeSection:CreateSubSection('Axe Stats');
@@ -4647,7 +4646,7 @@ local DupeInventory;
 DupeInventory=AxeModifications:CreateToggle('Dupe Inventory',false,function(toggle)GUISettings.DupeInventory=toggle;if toggle then if not Dragonhub:DupeInventory()then  task.wait(.3)DupeInventory:Toggle()end;end;end,false,true,'Duplicates Your Inventory.');
 
 local AxeOptions=AxeSection:CreateSubSection('Axe Options');
-AxeOptions:CreateButton('Drop All Tools',function()Ancestor:DropTools();end,true,true,'Drops All Your Tools.');
+AxeOptions:CreateButton('Drop All Tools',function()Dragonhub:DropTools();end,true,true,'Drops All Your Tools.');
 
 local CarTab=DragonhubUI:CreateTab(8821528672,'Car Options');
 local CarSection=CarTab:CreateSection()
